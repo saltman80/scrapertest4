@@ -44,8 +44,9 @@
           throw new Error(`highlightInvalidRows: Invalid row index at position ${idx}: ${row}`);
         }
       });
-      // TODO: implement server-side highlightInvalidRows in Code.gs
-      // For now, invoke client-side callback if provided
+      if (google && google.script && google.script.run) {
+        google.script.run.highlightInvalidRows(rows);
+      }
       if (typeof onRowsHighlighted === 'function') {
         onRowsHighlighted(rows);
       }
