@@ -1,5 +1,5 @@
 <!-- This file includes embedded JS/CSS due to project type rules -->
-<script>
+<!DOCTYPE html>
 <html>
 <head>
   <base target="_top">
@@ -123,20 +123,29 @@
       function startScraping() {
         disableButtons();
         clearErrorLog();
-        if (typeof validateUrls === 'function') {
-          var isValid = validateUrls();
-          if (!isValid) {
-            enableButtons();
-            return;
-          }
-        }
         if (typeof showSpinner === 'function') {
           showSpinner();
         }
-        google.script.run
-          .withSuccessHandler(onScrapeComplete)
-          .withFailureHandler(onScrapeError)
-          .startScrape();
+
+        google.script.run.withSuccessHandler(function(urls) {
+          var result = (typeof validateUrls === 'function') ?
+            validateUrls(urls) : { validUrls: urls, invalidRows: [] };
+
+          if (result.invalidRows && result.invalidRows.length) {
+            google.script.run.highlightInvalidRows(result.invalidRows);
+            if (typeof hideSpinner === 'function') {
+              hideSpinner();
+            }
+            enableButtons();
+            addToast('Invalid URLs found. Please fix and retry.', 'error');
+            return;
+          }
+
+          google.script.run
+            .withSuccessHandler(onScrapeComplete)
+            .withFailureHandler(onScrapeError)
+            .startScrape();
+        }).getUrls();
       }
 
       function cancelScraping() {
@@ -182,4 +191,3 @@
   </script>
 </body>
 </html>
-</script>

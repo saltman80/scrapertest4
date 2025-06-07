@@ -21,12 +21,12 @@ function openSidebar() {
     if (!sheet) throw new Error('Sheet "' + SCRAPE_SHEET_NAME + '" not found.');
     SheetStyler.applyHeaderStyles();
     sheet.activate();
-    sheet.getRange(URL_COLUMN + DATA_START_ROW).activate();
+    sheet.getRange(DATA_START_ROW, URL_COLUMN).activate();
     var html = HtmlService.createTemplateFromFile('SidebarHandler')
       .evaluate()
       .setTitle('URL Scraper');
     SpreadsheetApp.getUi().showSidebar(html);
   } catch (e) {
-    ToastManager.showToast('Error opening scraper: ' + e.message, 'ERROR');
+    showToast('Error opening scraper: ' + e.message, 'ERROR');
   }
 }
