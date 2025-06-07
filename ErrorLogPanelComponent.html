@@ -1,5 +1,5 @@
 <!-- This file includes embedded JS/CSS due to project type rules -->
-<div id="error-log-panel" role="log" aria-live="polite" aria-atomic="true" aria-label="Error Log"></div>
+<div id="error-log-panel" role="log" aria-live="polite" aria-atomic="true" aria-label="Error Log" style="display:none;"></div>
 <script>
 (function(){
   'use strict';
@@ -16,6 +16,7 @@
     entry.className = 'error-log-entry';
     entry.textContent = String(message);
     panel.appendChild(entry);
+    panel.style.display = 'block';
     panel.scrollTop = panel.scrollHeight;
   }
 
@@ -25,6 +26,7 @@
       throw new Error('ErrorLogPanel.clearLog: Error log panel element not found');
     }
     panel.innerHTML = '';
+    panel.style.display = 'none';
   }
 
   window.ErrorLogPanel = {
@@ -48,6 +50,7 @@
     overflow-y: auto;
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
+    display: none;
   }
   .error-log-entry {
     color: #FF5252;

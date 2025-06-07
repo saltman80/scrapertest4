@@ -133,6 +133,11 @@
 
           if (result.invalidRows && result.invalidRows.length) {
             google.script.run.highlightInvalidRows(result.invalidRows);
+            if (typeof appendLog === 'function') {
+              result.invalidRows.forEach(function(r) {
+                appendLog('Invalid URL in row ' + r);
+              });
+            }
             if (typeof hideSpinner === 'function') {
               hideSpinner();
             }
@@ -160,7 +165,10 @@
         }
         enableButtons();
         if (summary && summary.errors && summary.errors.length && typeof appendLog === 'function') {
-          appendLog(summary.errors);
+          summary.errors.forEach(function(err) {
+            var msg = 'Row ' + err.row + ': ' + err.message;
+            appendLog(msg);
+          });
         }
         var msg = 'Scraping complete';
         if (summary && typeof summary.successCount === 'number' && typeof summary.totalCount === 'number') {
