@@ -1,0 +1,57 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<div id="error-log-panel" role="log" aria-live="polite" aria-atomic="true" aria-label="Error Log"></div>
+<script>
+(function(){
+  'use strict';
+
+  function appendLog(message) {
+    if (message == null) {
+      throw new Error('ErrorLogPanel.appendLog: Missing message parameter');
+    }
+    const panel = document.getElementById('error-log-panel');
+    if (!panel) {
+      throw new Error('ErrorLogPanel.appendLog: Error log panel element not found');
+    }
+    const entry = document.createElement('div');
+    entry.className = 'error-log-entry';
+    entry.textContent = String(message);
+    panel.appendChild(entry);
+    panel.scrollTop = panel.scrollHeight;
+  }
+
+  function clearLog() {
+    const panel = document.getElementById('error-log-panel');
+    if (!panel) {
+      throw new Error('ErrorLogPanel.clearLog: Error log panel element not found');
+    }
+    panel.innerHTML = '';
+  }
+
+  window.ErrorLogPanel = {
+    appendLog: appendLog,
+    clearLog: clearLog
+  };
+
+  // Expose global functions for sidebar calls
+  window.appendLog = appendLog;
+  window.clearLog = clearLog;
+})();
+</script>
+<style>
+  #error-log-panel {
+    background-color: #1F1F1F;
+    color: #FFFFFF;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+  }
+  .error-log-entry {
+    color: #FF5252;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+</style>
