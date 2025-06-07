@@ -1,4 +1,3 @@
-const { SHEET_NAME, COLOR_HEADER_BG, COLOR_ROW_EVEN, COLOR_ROW_ODD } = getGlobalSheetConstants();
 const HEADER_FONT_COLOR = '#FFFFFF';
 const HEADER_BORDER_COLOR = '#666666';
 const DATA_FONT_COLOR = '#DDDDDD';
@@ -9,23 +8,25 @@ const DATA_FONT_COLOR = '#DDDDDD';
  * @throws {Error} If the spreadsheet or target sheet is unavailable.
  */
 function applyHeaderStyles() {
+  const globals = getGlobalSheetConstants();
   const ss = SpreadsheetApp.getActive();
   if (!ss) throw new Error('Unable to access the active spreadsheet.');
-  if (typeof SHEET_NAME !== 'string' || !SHEET_NAME.trim()) {
+  const sheetName = globals.SHEET_NAME;
+  if (typeof sheetName !== 'string' || !sheetName.trim()) {
     throw new Error('SHEET_NAME is not defined or invalid.');
   }
-  const sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) throw new Error(`Sheet "${SHEET_NAME}" not found.`);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new Error(`Sheet "${sheetName}" not found.`);
   
   sheet.setFrozenRows(1);
   const lastColumn = sheet.getLastColumn();
   if (lastColumn < 1) {
-    throw new Error(`Sheet "${SHEET_NAME}" has no columns.`);
+    throw new Error(`Sheet "${sheetName}" has no columns.`);
   }
   
   const headerRange = sheet.getRange(1, 1, 1, lastColumn);
   headerRange
-    .setBackground(COLOR_HEADER_BG)
+    .setBackground(globals.COLOR_HEADER_BG)
     .setFontColor(HEADER_FONT_COLOR)
     .setFontWeight('bold')
     .setBorder(true, true, true, true, true, true, HEADER_BORDER_COLOR);
@@ -39,13 +40,15 @@ function applyHeaderStyles() {
  * @throws {Error} If there are no data rows or the target sheet is unavailable.
  */
 function applyDataRowStyles() {
+  const globals = getGlobalSheetConstants();
   const ss = SpreadsheetApp.getActive();
   if (!ss) throw new Error('Unable to access the active spreadsheet.');
-  if (typeof SHEET_NAME !== 'string' || !SHEET_NAME.trim()) {
+  const sheetName = globals.SHEET_NAME;
+  if (typeof sheetName !== 'string' || !sheetName.trim()) {
     throw new Error('SHEET_NAME is not defined or invalid.');
   }
-  const sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) throw new Error(`Sheet "${SHEET_NAME}" not found.`);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new Error(`Sheet "${sheetName}" not found.`);
   
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) throw new Error('No data rows to style.');
@@ -58,7 +61,7 @@ function applyDataRowStyles() {
   
   for (let i = 0; i < numRows; i++) {
     const rowIndex = i + 2;
-    const bgColor = (rowIndex % 2 === 0) ? COLOR_ROW_EVEN : COLOR_ROW_ODD;
+    const bgColor = (rowIndex % 2 === 0) ? globals.COLOR_ROW_EVEN : globals.COLOR_ROW_ODD;
     backgrounds.push(new Array(numCols).fill(bgColor));
     fontColors.push(new Array(numCols).fill(DATA_FONT_COLOR));
   }
