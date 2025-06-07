@@ -1,0 +1,185 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<script>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background-color: #121212;
+      color: #FFFFFF;
+      font-family: 'Roboto', sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 400px;
+    }
+    .section-title {
+      margin-top: 24px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #90CAF9;
+    }
+    #buttonGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button {
+      background-color: #1F1F1F;
+      color: #FFFFFF;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover:enabled {
+      background-color: #2A2A2A;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    #toastContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .toast {
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #FFFFFF;
+      opacity: 0.9;
+      transition: opacity 0.3s ease;
+    }
+    .toast.success {
+      background-color: #2E7D32;
+    }
+    .toast.error {
+      background-color: #C62828;
+    }
+  </style>
+</head>
+<body>
+  <div class="section-title">Scraping Controls</div>
+  <div id="buttonGroup">
+    <button id="startBtn">Start Scraping</button>
+    <button id="cancelBtn">Cancel Scraping</button>
+  </div>
+  <?!= include('InputValidation') ?>
+  <?!= include('LoadingSpinnerComponent') ?>
+  <?!= include('ErrorLogPanelComponent') ?>
+  <div id="toastContainer" role="status" aria-live="polite"></div>
+  <script>
+    (function() {
+      var startBtn = document.getElementById('startBtn');
+      var cancelBtn = document.getElementById('cancelBtn');
+      var toastContainer = document.getElementById('toastContainer');
+      var MAX_TOASTS = 5;
+      var TOAST_DURATION = 5000;
+
+      function addToast(message, type) {
+        message = message || (type === 'success' ? 'Operation completed' : 'An error occurred');
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.textContent = message;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-atomic', 'true');
+        if (toastContainer.children.length >= MAX_TOASTS) {
+          toastContainer.removeChild(toastContainer.firstChild);
+        }
+        toastContainer.appendChild(toast);
+        setTimeout(function() {
+          toast.style.opacity = '0';
+          setTimeout(function() {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        }, TOAST_DURATION);
+      }
+
+      function disableButtons() {
+        startBtn.disabled = true;
+        cancelBtn.disabled = false;
+      }
+      function enableButtons() {
+        startBtn.disabled = false;
+        cancelBtn.disabled = true;
+      }
+
+      function clearErrorLog() {
+        if (typeof clearLog === 'function') {
+          clearLog();
+        }
+      }
+
+      function startScraping() {
+        disableButtons();
+        clearErrorLog();
+        if (typeof validateUrls === 'function') {
+          var isValid = validateUrls();
+          if (!isValid) {
+            enableButtons();
+            return;
+          }
+        }
+        if (typeof showSpinner === 'function') {
+          showSpinner();
+        }
+        google.script.run
+          .withSuccessHandler(onScrapeComplete)
+          .withFailureHandler(onScrapeError)
+          .startScrape();
+      }
+
+      function cancelScraping() {
+        cancelBtn.disabled = true;
+        google.script.run.cancelScrape();
+        addToast('Cancellation requested', 'success');
+      }
+
+      function onScrapeComplete(summary) {
+        if (typeof hideSpinner === 'function') {
+          hideSpinner();
+        }
+        enableButtons();
+        if (summary && summary.errors && summary.errors.length && typeof appendLog === 'function') {
+          appendLog(summary.errors);
+        }
+        var msg = 'Scraping complete';
+        if (summary && typeof summary.successCount === 'number' && typeof summary.totalCount === 'number') {
+          msg = 'Scraping complete: ' + summary.successCount + ' of ' + summary.totalCount + ' succeeded';
+        }
+        google.script.run.showToast(msg, 'SUCCESS');
+        addToast(msg, 'success');
+      }
+
+      function onScrapeError(error) {
+        if (typeof hideSpinner === 'function') {
+          hideSpinner();
+        }
+        enableButtons();
+        var msg = (error && error.message) ? error.message : String(error);
+        google.script.run.showToast(msg, 'ERROR');
+        addToast(msg, 'error');
+      }
+
+      startBtn.addEventListener('click', startScraping);
+      cancelBtn.addEventListener('click', cancelScraping);
+
+      document.addEventListener('DOMContentLoaded', function() {
+        startBtn.focus();
+        cancelBtn.disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>
+</script>
