@@ -1,0 +1,57 @@
+<!-- This file includes embedded JS/CSS due to project type rules -->
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script>
+    window.validateUrls = function(urlList) {
+      if (!Array.isArray(urlList)) {
+        throw new Error('validateUrls: Expected an array of URLs but received ' + Object.prototype.toString.call(urlList));
+      }
+      const validUrls = [];
+      const invalidRows = [];
+      urlList.forEach((urlString, index) => {
+        const rowIndex = index + 2; // sheet data starts at row 2
+        if (typeof urlString !== 'string') {
+          invalidRows.push(rowIndex);
+          return;
+        }
+        const trimmed = urlString.trim();
+        if (trimmed === '') {
+          invalidRows.push(rowIndex);
+          return;
+        }
+        try {
+          const parsed = new URL(trimmed);
+          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            validUrls.push({ url: parsed.href, rowIndex });
+          } else {
+            invalidRows.push(rowIndex);
+          }
+        } catch (e) {
+          invalidRows.push(rowIndex);
+        }
+      });
+      return { validUrls, invalidRows };
+    };
+
+    window.highlightInvalidRows = function(rows) {
+      if (!Array.isArray(rows)) {
+        throw new Error('highlightInvalidRows: Expected an array of row numbers but received ' + Object.prototype.toString.call(rows));
+      }
+      rows.forEach((row, idx) => {
+        if (typeof row !== 'number' || row < 2) {
+          throw new Error(`highlightInvalidRows: Invalid row index at position ${idx}: ${row}`);
+        }
+      });
+      // TODO: implement server-side highlightInvalidRows in Code.gs
+      // For now, invoke client-side callback if provided
+      if (typeof onRowsHighlighted === 'function') {
+        onRowsHighlighted(rows);
+      }
+    };
+  </script>
+</head>
+<body>
+</body>
+</html>
